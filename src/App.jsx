@@ -32,7 +32,7 @@ function Button({ children, onClick, className = "", type = "button", disabled }
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={\`px-4 py-2 rounded-2xl shadow text-sm font-medium border hover:shadow-md active:scale-[0.98] disabled:opacity-50 \${className}\`}
+      className={`px-4 py-2 rounded-2xl shadow text-sm font-medium border hover:shadow-md active:scale-[0.98] disabled:opacity-50 ${className}`}
     >
       {children}
     </button>
@@ -41,7 +41,7 @@ function Button({ children, onClick, className = "", type = "button", disabled }
 
 function Card({ children, className = "" }) {
   return (
-    <div className={\`rounded-2xl shadow p-4 bg-white \${className}\`}>{children}</div>
+    <div className={"rounded-2xl shadow p-4 bg-white " + className}>{children}</div>
   );
 }
 
