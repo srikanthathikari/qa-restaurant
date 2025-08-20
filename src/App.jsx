@@ -127,6 +127,3 @@ export function App() {
 }
 
 export default App;
-
-// Also export App as a named export to satisfy any bundlers or tests expecting a named export.
-export { App };
