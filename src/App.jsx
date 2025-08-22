@@ -16,14 +16,111 @@ const TAX_RATE = 0.0825;
 const MIN_PARTY_SIZE = 2;
 
 const MENU = [
-  { id: "m1", name: "Margherita Pizza", price: 11.5, tags: ["veg", "pizza"], description: "Fresh mozzarella, tomato sauce, and basil" },
-  { id: "m2", name: "Pepperoni Pizza", price: 13.0, tags: ["pizza"], description: "Spicy pepperoni with melted cheese" },
-  { id: "m3", name: "Paneer Tikka", price: 12.0, tags: ["veg", "indian"], description: "Grilled cottage cheese with aromatic spices" },
-  { id: "m4", name: "Chicken Biryani", price: 14.25, tags: ["indian"], description: "Fragrant rice with tender chicken and spices" },
-  { id: "m5", name: "Caesar Salad", price: 9.5, tags: ["salad"], description: "Crisp romaine, parmesan, and caesar dressing" },
-  { id: "m6", name: "Butter Naan", price: 3.5, tags: ["indian", "bread"], description: "Soft, buttery flatbread" },
-  { id: "m7", name: "Tomato Soup", price: 6.75, tags: ["soup", "veg"], description: "Rich tomato soup with herbs" },
-  { id: "m8", name: "Gulab Jamun", price: 5.25, tags: ["dessert", "indian"], description: "Sweet milk dumplings in rose syrup" },
+  { 
+    id: "m1", 
+    name: "Margherita Pizza", 
+    price: 11.5, 
+    tags: ["veg", "pizza"], 
+    description: "Fresh mozzarella, tomato sauce, and basil",
+    rating: 4.8,
+    reviews: 127,
+    prepTime: "15-20 min",
+    popular: true
+  },
+  { 
+    id: "m2", 
+    name: "Pepperoni Pizza", 
+    price: 13.0, 
+    tags: ["pizza"], 
+    description: "Spicy pepperoni with melted cheese",
+    rating: 4.6,
+    reviews: 89,
+    prepTime: "15-20 min",
+    popular: true
+  },
+  { 
+    id: "m3", 
+    name: "Paneer Tikka", 
+    price: 12.0, 
+    tags: ["veg", "indian"], 
+    description: "Grilled cottage cheese with aromatic spices",
+    rating: 4.7,
+    reviews: 156,
+    prepTime: "20-25 min",
+    popular: false
+  },
+  { 
+    id: "m4", 
+    name: "Chicken Biryani", 
+    price: 14.25, 
+    tags: ["indian"], 
+    description: "Fragrant rice with tender chicken and spices",
+    rating: 4.9,
+    reviews: 203,
+    prepTime: "25-30 min",
+    popular: true
+  },
+  { 
+    id: "m5", 
+    name: "Caesar Salad", 
+    price: 9.5, 
+    tags: ["salad"], 
+    description: "Crisp romaine, parmesan, and caesar dressing",
+    rating: 4.4,
+    reviews: 67,
+    prepTime: "10-15 min",
+    popular: false
+  },
+  { 
+    id: "m6", 
+    name: "Butter Naan", 
+    price: 3.5, 
+    tags: ["indian", "bread"], 
+    description: "Soft, buttery flatbread",
+    rating: 4.5,
+    reviews: 89,
+    prepTime: "8-12 min",
+    popular: false
+  },
+  { 
+    id: "m7", 
+    name: "Tomato Soup", 
+    price: 6.75, 
+    tags: ["soup", "veg"], 
+    description: "Rich tomato soup with herbs",
+    rating: 4.3,
+    reviews: 45,
+    prepTime: "12-15 min",
+    popular: false
+  },
+  { 
+    id: "m8", 
+    name: "Gulab Jamun", 
+    price: 5.25, 
+    tags: ["dessert", "indian"], 
+    description: "Sweet milk dumplings in rose syrup",
+    rating: 4.6,
+    reviews: 78,
+    prepTime: "5-8 min",
+    popular: false
+  },
+];
+
+const SPECIAL_OFFERS = [
+  {
+    id: "offer1",
+    title: "🍕 Pizza Lovers Special",
+    description: "Buy any 2 pizzas, get 1 free!",
+    discount: "33% OFF",
+    validUntil: "2024-12-31"
+  },
+  {
+    id: "offer2",
+    title: "🆕 First Order Bonus",
+    description: "New customers get 20% off on orders above $25",
+    discount: "20% OFF",
+    validUntil: "2024-12-31"
+  }
 ];
 
 function Button({ children, onClick, className = "", type = "button", disabled }) {
@@ -54,6 +151,36 @@ function Field({ label, children, required }) {
       {children}
     </label>
   );
+}
+
+// -----------------------------
+// Favorites System
+// -----------------------------
+function useFavorites() {
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const raw = localStorage.getItem("qa_favorites");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("qa_favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (id) => {
+    setFavorites(prev => 
+      prev.includes(id) 
+        ? prev.filter(favId => favId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const isFavorite = (id) => favorites.includes(id);
+
+  return { favorites, toggleFavorite, isFavorite };
 }
 
 // -----------------------------
@@ -99,15 +226,87 @@ function useCart() {
 }
 
 // -----------------------------
+// Special Offers Component
+// -----------------------------
+function SpecialOffers() {
+  return (
+    <div className="mb-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">🎉 Special Offers</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {SPECIAL_OFFERS.map(offer => (
+          <Card key={offer.id} className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-lg text-gray-900 mb-1">{offer.title}</h3>
+                <p className="text-gray-600 text-sm">{offer.description}</p>
+                <p className="text-xs text-gray-500 mt-2">Valid until: {offer.validUntil}</p>
+              </div>
+              <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                {offer.discount}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------
 // Menu Item Component
 // -----------------------------
-function MenuItem({ item, onAddToCart }) {
+function MenuItem({ item, onAddToCart, onToggleFavorite, isFavorite, showQuickAdd = false }) {
+  const [showQuickAddInput, setShowQuickAddInput] = useState(false);
+  const [quickAddQty, setQuickAddQty] = useState(1);
+
+  const handleQuickAdd = () => {
+    if (quickAddQty > 0) {
+      for (let i = 0; i < quickAddQty; i++) {
+        onAddToCart(item.id);
+      }
+      setShowQuickAddInput(false);
+      setQuickAddQty(1);
+    }
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
-      <div className="flex justify-between items-start mb-2">
-        <div>
+    <Card className="hover:shadow-lg transition-shadow duration-200 relative">
+      {/* Popular Badge */}
+      {item.popular && (
+        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+          🔥 Popular
+        </div>
+      )}
+      
+      {/* Favorite Button */}
+      <button
+        onClick={() => onToggleFavorite(item.id)}
+        className={`absolute top-2 left-2 p-2 rounded-full transition-colors ${
+          isFavorite 
+            ? "bg-red-500 text-white" 
+            : "bg-white text-gray-400 hover:text-red-500"
+        }`}
+      >
+        {isFavorite ? "❤️" : "🤍"}
+      </button>
+
+      <div className="flex justify-between items-start mb-2 pt-8">
+        <div className="flex-1">
           <h3 className="font-semibold text-lg text-gray-900">{item.name}</h3>
           <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+          
+          {/* Rating and Reviews */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center">
+              <span className="text-yellow-500 mr-1">⭐</span>
+              <span className="text-sm font-medium">{item.rating}</span>
+            </div>
+            <span className="text-gray-400 text-sm">({item.reviews} reviews)</span>
+          </div>
+          
+          {/* Prep Time */}
+          <div className="text-sm text-gray-500 mb-2">⏱️ {item.prepTime}</div>
+          
           <div className="flex flex-wrap gap-1 mb-3">
             {item.tags.map(tag => (
               <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
@@ -120,12 +319,39 @@ function MenuItem({ item, onAddToCart }) {
           <div className="text-lg font-bold text-green-600">{CURRENCY(item.price)}</div>
         </div>
       </div>
-      <Button 
-        onClick={() => onAddToCart(item.id)}
-        className="w-full bg-green-600 text-white border-green-600 hover:bg-green-700"
-      >
-        Add to Cart
-      </Button>
+
+      {showQuickAdd && showQuickAddInput ? (
+        <div className="flex gap-2 mb-3">
+          <input
+            type="number"
+            min="1"
+            max="10"
+            value={quickAddQty}
+            onChange={(e) => setQuickAddQty(parseInt(e.target.value) || 1)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-center"
+          />
+          <Button onClick={handleQuickAdd} className="bg-green-600 text-white border-green-600">
+            Add {quickAddQty}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => onAddToCart(item.id)}
+            className="flex-1 bg-green-600 text-white border-green-600 hover:bg-green-700"
+          >
+            Add to Cart
+          </Button>
+          {showQuickAdd && (
+            <Button 
+              onClick={() => setShowQuickAddInput(true)}
+              className="px-3 bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+            >
+              Quick Add
+            </Button>
+          )}
+        </div>
+      )}
     </Card>
   );
 }
@@ -151,6 +377,10 @@ function Cart({ cart, onCheckout, onClose }) {
     );
   }
 
+  // Calculate delivery time
+  const estimatedDelivery = new Date();
+  estimatedDelivery.setMinutes(estimatedDelivery.getMinutes() + 45);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <Card className="max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
@@ -159,6 +389,17 @@ function Cart({ cart, onCheckout, onClose }) {
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             ✕
           </button>
+        </div>
+        
+        {/* Delivery Time Estimate */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-blue-600">🚚</span>
+            <div>
+              <div className="text-sm font-medium text-blue-900">Estimated Delivery</div>
+              <div className="text-sm text-blue-700">{estimatedDelivery.toLocaleTimeString()}</div>
+            </div>
+          </div>
         </div>
         
         <div className="space-y-3 mb-4">
@@ -224,9 +465,10 @@ function Cart({ cart, onCheckout, onClose }) {
 // -----------------------------
 // Home Page Component
 // -----------------------------
-function HomePage({ cart, onAddToCart, onOpenCart }) {
+function HomePage({ cart, onAddToCart, onOpenCart, favorites, onToggleFavorite }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const categories = ["all", ...new Set(MENU.flatMap(item => item.tags))];
   
@@ -248,6 +490,8 @@ function HomePage({ cart, onAddToCart, onOpenCart }) {
     return filtered;
   }, [searchTerm, selectedCategory]);
 
+  const popularItems = MENU.filter(item => item.popular);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
@@ -255,6 +499,28 @@ function HomePage({ cart, onAddToCart, onOpenCart }) {
         <h1 className="text-4xl font-bold text-gray-900 mb-2">🍕 Fresh Bites</h1>
         <p className="text-xl text-gray-600">Delicious food delivered to your doorstep</p>
       </div>
+
+      {/* Special Offers */}
+      <SpecialOffers />
+
+      {/* Popular Items */}
+      {popularItems.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">🔥 Popular Items</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {popularItems.map(item => (
+              <MenuItem 
+                key={item.id} 
+                item={item} 
+                onAddToCart={onAddToCart} 
+                onToggleFavorite={onToggleFavorite}
+                isFavorite={favorites.includes(item.id)}
+                showQuickAdd={true}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="mb-8 space-y-4">
@@ -284,12 +550,32 @@ function HomePage({ cart, onAddToCart, onOpenCart }) {
             </button>
           ))}
         </div>
+
+        {/* Quick Add Toggle */}
+        <div className="text-center">
+          <label className="flex items-center justify-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showQuickAdd}
+              onChange={(e) => setShowQuickAdd(e.target.checked)}
+              className="rounded"
+            />
+            <span className="text-sm text-gray-600">Enable Quick Add (add multiple items at once)</span>
+          </label>
+        </div>
       </div>
 
       {/* Menu Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {filteredMenu.map(item => (
-          <MenuItem key={item.id} item={item} onAddToCart={onAddToCart} />
+          <MenuItem 
+            key={item.id} 
+            item={item} 
+            onAddToCart={onAddToCart} 
+            onToggleFavorite={onToggleFavorite}
+            isFavorite={favorites.includes(item.id)}
+            showQuickAdd={showQuickAdd}
+          />
         ))}
       </div>
 
@@ -318,10 +604,21 @@ function CheckoutPage({ cart, onOrderPlaced, onBack }) {
     deliveryInstructions: ""
   });
 
+  const [deliveryOption, setDeliveryOption] = useState("standard");
+  const [estimatedDelivery, setEstimatedDelivery] = useState("");
+
+  useEffect(() => {
+    const now = new Date();
+    const deliveryTime = new Date(now.getTime() + (deliveryOption === "express" ? 30 : 45) * 60000);
+    setEstimatedDelivery(deliveryTime.toLocaleTimeString());
+  }, [deliveryOption]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onOrderPlaced();
   };
+
+  const deliveryFee = deliveryOption === "express" ? 3.99 : 0;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -344,6 +641,37 @@ function CheckoutPage({ cart, onOrderPlaced, onBack }) {
               </div>
             ))}
           </div>
+          
+          {/* Delivery Options */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <h3 className="font-medium mb-2">Delivery Options</h3>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="delivery"
+                  value="standard"
+                  checked={deliveryOption === "standard"}
+                  onChange={(e) => setDeliveryOption(e.target.value)}
+                />
+                <span>Standard Delivery (45 min) - Free</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="delivery"
+                  value="express"
+                  checked={deliveryOption === "express"}
+                  onChange={(e) => setDeliveryOption(e.target.value)}
+                />
+                <span>Express Delivery (30 min) - {CURRENCY(3.99)}</span>
+              </label>
+            </div>
+            <div className="text-sm text-gray-600 mt-2">
+              Estimated delivery: {estimatedDelivery}
+            </div>
+          </div>
+          
           <div className="border-t pt-3 space-y-2">
             <div className="flex justify-between">
               <span>Subtotal:</span>
@@ -353,9 +681,13 @@ function CheckoutPage({ cart, onOrderPlaced, onBack }) {
               <span>Tax:</span>
               <span>{CURRENCY(cart.tax)}</span>
             </div>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Delivery Fee:</span>
+              <span>{deliveryOption === "express" ? CURRENCY(deliveryFee) : "Free"}</span>
+            </div>
             <div className="flex justify-between font-bold text-lg">
               <span>Total:</span>
-              <span>{CURRENCY(cart.total)}</span>
+              <span>{CURRENCY(cart.total + deliveryFee)}</span>
             </div>
           </div>
         </Card>
@@ -418,7 +750,7 @@ function CheckoutPage({ cart, onOrderPlaced, onBack }) {
               type="submit"
               className="w-full bg-green-600 text-white border-green-600 hover:bg-green-700"
             >
-              Place Order - {CURRENCY(cart.total)}
+              Place Order - {CURRENCY(cart.total + deliveryFee)}
             </Button>
           </form>
         </Card>
@@ -434,6 +766,7 @@ export function App() {
   const [route, setRoute] = useState("home");
   const [showCart, setShowCart] = useState(false);
   const cart = useCart();
+  const favorites = useFavorites();
 
   const [toast, setToast] = useState("");
   
@@ -445,9 +778,9 @@ export function App() {
 
   const onOrderPlaced = () => {
     cart.clear();
-    setToast("Order placed successfully! 🎉");
+    setToast("Order placed successfully! 🎉 Check your email for confirmation.");
     setRoute("home");
-    setTimeout(() => setToast(""), 3000);
+    setTimeout(() => setToast(""), 4000);
   };
 
   const renderPage = () => {
@@ -455,7 +788,13 @@ export function App() {
       case "checkout":
         return <CheckoutPage cart={cart} onOrderPlaced={onOrderPlaced} onBack={() => setRoute("home")} />;
       default:
-        return <HomePage cart={cart} onAddToCart={addToCart} onOpenCart={() => setShowCart(true)} />;
+        return <HomePage 
+          cart={cart} 
+          onAddToCart={addToCart} 
+          onOpenCart={() => setShowCart(true)}
+          favorites={favorites.favorites}
+          onToggleFavorite={favorites.toggleFavorite}
+        />;
     }
   };
 
@@ -477,6 +816,12 @@ export function App() {
                   }`}
                 >
                   Menu
+                </button>
+                <button 
+                  onClick={() => setRoute("home")}
+                  className="px-3 py-2 rounded-lg transition-colors text-gray-600 hover:text-gray-900"
+                >
+                  Favorites ({favorites.favorites.length})
                 </button>
               </div>
             </div>
